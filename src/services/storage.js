@@ -1,69 +1,82 @@
-const STORAGE_KEY = 'mls_picks_history';
+import { db } from './firebase';
+import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore';
 
 /**
- * Guarda una nueva lista de pronósticos en el historial.
- * Solo guarda si hay picks y evita guardar duplicados del mismo día/hora exacta si hay auto-refresh.
+ * Guarda una nueva lista de pronósticos en el historial de Firestore.
  */
-export function savePicksToHistory(picks) {
-  if (!picks || picks.length === 0) return;
+export async function savePicksToHistory(picks, userId) {
+  if (!picks || picks.length === 0 || !userId) return;
 
-  const history = getSavedHistory();
   const now = new Date();
   const currentDateStr = now.toLocaleDateString();
+  const historyRef = collection(db, 'users', userId, 'history');
+  
+  // Buscar si ya hay un registro hoy
+  const q = query(historyRef, orderBy('timestamp', 'desc'));
+  const snapshot = await getDocs(q);
+  let existingId = null;
+
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    if (data.dateOnly === currentDateStr) {
+      existingId = docSnap.id;
+    }
+  });
+
+  const entryId = existingId || Date.now().toString();
   
   const newEntry = {
-    id: Date.now().toString(),
     date: now.toLocaleString(),
     dateOnly: currentDateStr,
+    timestamp: now.getTime(),
     picks: picks
   };
 
-  // Prevenir que se creen múltiples registros el mismo día.
-  // Si el último guardado es de hoy, lo actualizamos.
-  if (history.length > 0) {
-    // Extraemos la fecha del último registro
-    const lastEntryDateStr = history[0].dateOnly || new Date(parseInt(history[0].id, 10)).toLocaleDateString();
-    
-    if (currentDateStr === lastEntryDateStr) {
-      newEntry.id = history[0].id; // Mantenemos el mismo ID
-      history[0] = newEntry;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-      return;
-    }
-  }
-
-  const updatedHistory = [newEntry, ...history];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+  await setDoc(doc(historyRef, entryId), newEntry);
 }
 
 /**
  * Obtiene el historial completo de pronósticos guardados
  */
-export function getSavedHistory() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      console.error("Error leyendo historial", e);
-      return [];
-    }
-  }
-  return [];
+export async function getSavedHistory(userId) {
+  if (!userId) return [];
+  
+  const historyRef = collection(db, 'users', userId, 'history');
+  const q = query(historyRef, orderBy('timestamp', 'desc'));
+  const snapshot = await getDocs(q);
+  
+  const history = [];
+  snapshot.forEach(docSnap => {
+    history.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+  
+  return history;
 }
 
 /**
  * Borra todo el historial
  */
-export function clearHistory() {
-  localStorage.removeItem(STORAGE_KEY);
+export async function clearHistory(userId) {
+  if (!userId) return;
+  const historyRef = collection(db, 'users', userId, 'history');
+  const snapshot = await getDocs(historyRef);
+  
+  const deletePromises = [];
+  snapshot.forEach(docSnap => {
+    deletePromises.push(deleteDoc(docSnap.ref));
+  });
+  
+  await Promise.all(deletePromises);
 }
 
 /**
  * Borra una entrada específica del historial
  */
-export function deleteHistoryEntry(id) {
-  const history = getSavedHistory();
-  const updatedHistory = history.filter(entry => entry.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+export async function deleteHistoryEntry(userId, entryId) {
+  if (!userId || !entryId) return;
+  const entryRef = doc(db, 'users', userId, 'history', entryId);
+  await deleteDoc(entryRef);
 }

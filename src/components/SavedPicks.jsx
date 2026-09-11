@@ -1,26 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { getSavedHistory, clearHistory, deleteHistoryEntry } from '../services/storage';
 
-const SavedPicks = () => {
+const SavedPicks = ({ user }) => {
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadHistory = async () => {
+    if (user) {
+      setLoading(true);
+      const data = await getSavedHistory(user.uid);
+      setHistory(data);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setHistory(getSavedHistory());
-  }, []);
+    loadHistory();
+  }, [user]);
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (window.confirm('¿Estás seguro de que deseas borrar todo el historial?')) {
-      clearHistory();
+      await clearHistory(user.uid);
       setHistory([]);
     }
   };
 
-  const handleDeleteEntry = (id) => {
+  const handleDeleteEntry = async (id) => {
     if (window.confirm('¿Estás seguro de que deseas borrar este registro de apuestas?')) {
-      deleteHistoryEntry(id);
-      setHistory(getSavedHistory());
+      await deleteHistoryEntry(user.uid, id);
+      await loadHistory();
     }
   };
+
+  if (loading) {
+    return <div style={{textAlign: 'center', padding: '2rem'}}>Cargando historial...</div>;
+  }
 
   if (history.length === 0) {
     return (
