@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth } from '../services/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
-const AuthModal = ({ onClose }) => {
+const AuthModal = ({ onClose, onMockLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,8 +12,19 @@ const AuthModal = ({ onClose }) => {
     e.preventDefault();
     setError('');
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (cleanEmail === 'admin3030' && cleanPassword === 'admin 3030') {
+      if (onMockLogin) {
+        onMockLogin({ uid: 'admin-id-3030', email: 'admin3030', isAdmin: true });
+      }
+      onClose();
+      return;
+    }
+
     if (!auth) {
-      setError('Firebase no está configurado. Por favor, añade tus credenciales en firebase.js');
+      setError('Firebase no está configurado. Ingresa como "admin3030" con clave "admin 3030" para probar.');
       return;
     }
 
@@ -39,8 +50,8 @@ const AuthModal = ({ onClose }) => {
         
         <form onSubmit={handleSubmit} className="auth-form">
           <input 
-            type="email" 
-            placeholder="Correo electrónico" 
+            type="text" 
+            placeholder="Usuario o Correo (ej: admin3030)" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
