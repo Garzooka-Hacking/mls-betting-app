@@ -36,6 +36,30 @@ function App() {
   useEffect(() => {
     // Generar y guardar automáticamente al iniciar la app
     handleGenerate('mls');
+
+    // --- PROTECCIÓN ANTI-COPIA ---
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      // Prevenir F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+C, Ctrl+A
+      if (
+        e.keyCode === 123 || 
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
+        (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 67 || e.keyCode === 65))
+      ) {
+        e.preventDefault();
+      }
+    };
+    const handleDragStart = (e) => e.preventDefault();
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('dragstart', handleDragStart);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('dragstart', handleDragStart);
+    };
   }, []);
 
   // Auto-refrescar en segundo plano cada 60 segundos
