@@ -48,6 +48,7 @@ body {
   margin-bottom: 1rem;
   background: linear-gradient(to right, #60a5fa, #a78bfa);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -142,6 +143,7 @@ body {
 /* Common Container Styles */
 .table-container, .picks-container {
   background: var(--bg-surface);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 1rem;
@@ -310,6 +312,7 @@ tr.eliminated td:first-child {
 /* Saved Picks Styles */
 .saved-picks-container {
   background: var(--bg-surface);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 2rem;
@@ -403,6 +406,7 @@ tr.eliminated td:first-child {
 /* Chat Styles */
 .chat-container {
   background: var(--bg-surface);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 1rem;

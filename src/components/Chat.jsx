@@ -144,7 +144,7 @@ const Chat = () => {
       
       {isLocalMode && !user && (
         <div className="firebase-warning">
-          Modo Local Activo: Firebase desconectado. Ingresa como admin3030 para probar.
+          Modo Local Activo: Firebase desconectado. Ingresa como admin3030@ para probar.
         </div>
       )}
 
@@ -155,7 +155,7 @@ const Chat = () => {
           return (
             <div key={msg.id} className={`message ${isMe ? 'my-message' : ''} ${isAdmin ? 'admin-message' : ''}`}>
               <div className="msg-header">
-                <span className="msg-user">{isAdmin ? '👑 ' + (msg.email === 'admin3030' ? 'Admin' : 'Admin') : (msg.email ? msg.email.split('@')[0] : 'Usuario')}</span>
+                <span className="msg-user">{isAdmin ? '👑 ' + (msg.email === 'admin3030@' ? 'Admin' : 'Admin') : (msg.email ? msg.email.replace(/@[^@]+$/, '') : 'Usuario')}</span>
                 {user && (user.isAdmin || user.email === ADMIN_EMAIL) && (
                   <button className="delete-msg-btn" onClick={() => handleDeleteMessage(msg.id)}>🗑️</button>
                 )}

@@ -15,28 +15,41 @@ const AuthModal = ({ onClose, onMockLogin }) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    if (cleanEmail === 'admin3030' && cleanPassword === 'admin 3030') {
+    if (cleanEmail === 'admin3030@' && cleanPassword === 'admin 3030') {
       if (onMockLogin) {
-        onMockLogin({ uid: 'admin-id-3030', email: 'admin3030', isAdmin: true });
+        onMockLogin({ uid: 'admin-id-3030', email: 'admin3030@', isAdmin: true });
       }
       onClose();
       return;
     }
 
     if (!auth) {
-      setError('Firebase no está configurado. Ingresa como "admin3030" con clave "admin 3030" para probar.');
+      setError('Firebase no está configurado. Ingresa como "admin3030@" con clave "admin 3030" para probar.');
       return;
+    }
+
+    // Permitir ingresar un ID con o sin @ añadiendo un dominio ficticio si es necesario
+    let authEmail = email.trim().toLowerCase();
+    if (!authEmail.includes('@') || (authEmail.indexOf('@') === 0 && authEmail.lastIndexOf('@') === 0)) {
+      authEmail = authEmail + '@app.com';
     }
 
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, authEmail, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, authEmail, password);
       }
       onClose(); // Cerrar modal al tener éxito
     } catch (err) {
-      setError(err.message);
+      // Mensajes de error más amigables
+      if (err.code === 'auth/invalid-email') {
+        setError('Formato de usuario/correo inválido.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('Usuario o contraseña incorrectos.');
+      } else {
+        setError('Error: ' + err.message);
+      }
     }
   };
 
@@ -51,7 +64,7 @@ const AuthModal = ({ onClose, onMockLogin }) => {
         <form onSubmit={handleSubmit} className="auth-form">
           <input 
             type="text" 
-            placeholder="Usuario o Correo (ej: admin3030)" 
+            placeholder="Usuario o Correo (ej: admin3030@)" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
