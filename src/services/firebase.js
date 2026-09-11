@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AcJqEcaf2e4NE25MH156rjvZEYiLqLp3gx",
+  apiKey: "AIzaSyDzObXgfQwA70XMtUDVbZthKfr5t62Y17U",
   authDomain: "mls-betting-app.firebaseapp.com",
   projectId: "mls-betting-app",
   storageBucket: "mls-betting-app.firebasestorage.app",
