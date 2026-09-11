@@ -4,7 +4,6 @@ import BettingPicks from './components/BettingPicks';
 import SavedPicks from './components/SavedPicks';
 import { fetchMlsData, fetchChampionsLeagueData } from './services/api';
 import { savePicksToHistory } from './services/storage';
-import Chat from './components/Chat';
 import './index.css';
 
 function App() {
@@ -109,7 +108,6 @@ function App() {
             </div>
             <div className="bottom-grid">
               <BettingPicks picks={apiData.picks} />
-              <Chat />
             </div>
           </main>
         )
